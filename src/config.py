@@ -1,20 +1,68 @@
 import os
+from dataclasses import dataclass
+from typing import List
 from dotenv import load_dotenv
 
-# Cargar variables de entorno desde .env
 load_dotenv()
 
-# Configuración del bot
-TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
-if not TELEGRAM_TOKEN:
-    raise ValueError("No se encontró TELEGRAM_TOKEN en variables de entorno")
+@dataclass
+class BotConfig:
+    """Configuración relacionada con el bot de Telegram"""
+    token: str
+    welcome_message: str = """
+¡Hola! 👋 Soy el Bot de test de rama de precios de Bitso
 
-# Configuración de Bitso
-DEFAULT_PAIRS = ['btc_mxn', 'eth_mxn', 'xrp_mxn']
-UPDATE_INTERVAL = 60  # minutos
+Comandos disponibles:
+/precio - Ver precios actuales 💰
+/activar - Activar actualizaciones automáticas ⚡
+/desactivar - Desactivar actualizaciones 🚫
+/ayuda - Mostrar este mensaje de ayuda ℹ️
+    """
 
-# Configuración de la API
-BITSO_API_URL = "https://api.bitso.com/v3"
+@dataclass
+class BitsoConfig:
+    """Configuración relacionada con la API de Bitso"""
+    api_base_url: str
+    trading_pairs: List[str]
+    update_interval: int 
 
-# Modo debug
-DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
+@dataclass
+class Config:
+    """Configuración global de la aplicación"""
+    bot: BotConfig
+    bitso: BitsoConfig
+    debug: bool
+
+def load_config() -> Config:
+    """
+    Carga y valida la configuración desde variables de entorno
+    
+    Returns:
+        Config: Objeto con toda la configuración validada
+    
+    Raises:
+        ValueError: Si falta alguna variable de entorno requerida
+    """
+    token = os.getenv('TELEGRAM_TOKEN')
+    if not token:
+        raise ValueError("No se encontró TELEGRAM_TOKEN en variables de entorno")
+
+    bot_config = BotConfig(
+        token=token
+    )
+
+    # Configuración de Bitso
+    bitso_config = BitsoConfig(
+        api_base_url="https://api.bitso.com/v3",
+        trading_pairs=['btc_mxn', 'eth_mxn', 'xrp_mxn', 'sol_mxn', 'usdt_mxn'],
+        update_interval=int(os.getenv('UPDATE_INTERVAL', '1'))  
+    )
+
+    # Configuración global
+    return Config(
+        bot=bot_config,
+        bitso=bitso_config,
+        debug=os.getenv('DEBUG', 'False').lower() == 'true'
+    )
+
+config = load_config()
