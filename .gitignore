@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+
+.idea/
+.vscode/
+*.swp
+*.swo
+
+.env
+config.local.py
+
+*.log
